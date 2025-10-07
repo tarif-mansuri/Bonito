@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,62 +28,83 @@ public class PrettyProcess {
         Runnable task = () -> {
             // Call your BSE API logic here
         	
-        	try {
-                // Get today's date in the format YYYYMMDD
-                LocalDate today = LocalDate.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                String formattedDate = today.format(formatter);
+        	LocalTime now = LocalTime.now();
 
-                // Construct the API URL
-                String apiUrl = "https://api.bseindia.com/BseIndiaAPI/api/AnnSubCategoryGetData/w?" +
-                        "pageno=1" +
-                        "&strCat=Board+Meeting" +
-                        "&strPrevDate=" + formattedDate +
-                        "&strScrip=" +
-                        "&strSearch=P" +
-                        "&strToDate=" + formattedDate +
-                        "&strType=C" +
-                        "&subcategory=Board+Meeting";
+            // Define first range: 8:00 AM to 3:30 PM
+            LocalTime morningStart = LocalTime.of(8, 0);
+            LocalTime morningEnd = LocalTime.of(15, 30);
 
-                // Send GET request to the API
-                @SuppressWarnings("deprecation")
-				HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
-                connection.setRequestMethod("GET");
-                
-                connection.setRequestProperty("User-Agent", 
-                	    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " + 
-                	    "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36");
-                	connection.setRequestProperty("Accept", "application/json");
-                	connection.setRequestProperty("Referer", "https://www.bseindia.com/");
+            // Define second range: 9:00 PM to 9:02 PM
+            LocalTime nightStart = LocalTime.of(21, 0);
+            LocalTime nightEnd = LocalTime.of(21, 2);
 
-                // Read the response
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
+            // Check if current time is in either range
+            if (( !now.isBefore(morningStart) && !now.isAfter(morningEnd) ) ||
+                ( !now.isBefore(nightStart) && !now.isAfter(nightEnd) )) {           	
+                System.out.println("Do the task now! ".concat(now.toString()));
                 
-                ObjectMapper mapper = new ObjectMapper();
-                String str = response.toString();
-                JsonNode jsonNode = mapper.readTree(str);
-                //BseApiResponse apiResponse = mapper.readValue(response.toString(), BseApiResponse.class);
-                
-                if (jsonNode.has("Table")) {
-                	
-                    for (JsonNode announcement : jsonNode.get("Table")) {
-                    	NewsItem item = mapper.readValue(announcement.toString(), NewsItem.class);
-                    	if(item.getMore().contains("bonus share")) {
-                    		Data.addItem(item);
-                    	}
-                        
+                try {
+                    // Get today's date in the format YYYYMMDD
+                    LocalDate today = LocalDate.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    String formattedDate = today.format(formatter);
+
+                    // Construct the API URL
+                    String apiUrl = "https://api.bseindia.com/BseIndiaAPI/api/AnnSubCategoryGetData/w?" +
+                            "pageno=1" +
+                            "&strCat=Board+Meeting" +
+                            "&strPrevDate=" + formattedDate +
+                            "&strScrip=" +
+                            "&strSearch=P" +
+                            "&strToDate=" + formattedDate +
+                            "&strType=C" +
+                            "&subcategory=Board+Meeting";
+
+                    // Send GET request to the API
+                    @SuppressWarnings("deprecation")
+    				HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+                    connection.setRequestMethod("GET");
+                    
+                    connection.setRequestProperty("User-Agent", 
+                    	    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " + 
+                    	    "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36");
+                    	connection.setRequestProperty("Accept", "application/json");
+                    	connection.setRequestProperty("Referer", "https://www.bseindia.com/");
+
+                    // Read the response
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
                     }
-                }
+                    in.close();
+                    
+                    ObjectMapper mapper = new ObjectMapper();
+                    String str = response.toString();
+                    JsonNode jsonNode = mapper.readTree(str);
+                    //BseApiResponse apiResponse = mapper.readValue(response.toString(), BseApiResponse.class);
+                    
+                    if (jsonNode.has("Table")) {
+                    	
+                        for (JsonNode announcement : jsonNode.get("Table")) {
+                        	NewsItem item = mapper.readValue(announcement.toString(), NewsItem.class);
+                        	if(item.getMore().contains("bonus share") || item.getMore().contains("stock split")) {
+                        		Data.addItem(item);
+                        	}
+                            
+                        }
+                    }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                
+            } else {
+                System.out.println("Outside allowed time ".concat(now.toString()));
             }
+        	
+        	
         	
         };
 

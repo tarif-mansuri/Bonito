@@ -33,7 +33,7 @@ public class TelegramNotifier {
 
             int responseCode = conn.getResponseCode();
             if (responseCode == 200) {
-                System.out.println("Message sent to Telegram!");
+                System.out.println(message);
             } else {
                 System.out.println("Error sending message, response code: " + responseCode);
             }
