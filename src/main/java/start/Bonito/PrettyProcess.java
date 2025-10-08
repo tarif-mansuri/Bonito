@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import start.dao.Data;
-import start.model.BseApiResponse;
 import start.model.NewsItem;
 
 public class PrettyProcess {
