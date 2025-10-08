@@ -42,7 +42,4 @@ public class TelegramNotifier {
             e.printStackTrace();
         }
     }
-    public static void main(String[] args) {
-    	sendMessage("Its working...");
-    }
 }
