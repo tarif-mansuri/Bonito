@@ -1,11 +1,11 @@
-name: Run Java App
+name: Build and Run Spring Boot App
 
 on:
   push:
-    branches: [ "main" ]   # run on pushes to main branch
+    branches: [ "main" ]
 
 jobs:
-  run-java:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,9 +18,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Compile All Java files
-        run: javac -d out $(find src -name "*.java")
+      - name: Build with Maven (skip tests)
+        run: mvn -B package -DskipTests
 
-      - name: Run Java
-        run: java -cp out start.Bonito.Main
+      - name: Run Spring Boot App
+        run: mvn spring-boot:run -DskipTests
 
