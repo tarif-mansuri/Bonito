@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,7 +28,8 @@ public class PrettyProcess {
         Runnable task = () -> {
             // Call your BSE API logic here
         	
-        	LocalTime now = LocalTime.now();
+        	//LocalTime now = LocalTime.now();
+        	LocalTime now = LocalTime.now(ZoneId.of("Asia/Kolkata"));
 
             // Define first range: 8:00 AM to 3:30 PM
             LocalTime morningStart = LocalTime.of(8, 0);
