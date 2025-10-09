@@ -1,9 +1,10 @@
 name: Build and Run Spring Boot App
 
 on:
+  workflow_dispatch:   # ✅ manual trigger button
   schedule:
-    - cron: '* 2-10 * * 1-5'   # every minute from 08:00–15:59 IST (Mon–Fri)
-    - cron: '30-32 15 * * 1-5' # 21:00–21:02 IST (Mon–Fri)
+    - cron: '* 2-10 * * 1-5'
+    - cron: '30-32 15 * * 1-5'
 
 jobs:
   build:
