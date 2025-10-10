@@ -3,8 +3,7 @@ name: Build and Run Java App
 on:
   workflow_dispatch:
   schedule:
-    - cron: '* 2-10 * * 1-5'   # 08:00–15:59 IST
-    - cron: '30-32 15 * * 1-5' # 21:00–21:02 IST
+    - cron: '*/5 3-9 * * 1-5'   # every 5 min from 08:30–15:00 IST (Mon–Fri)
 
 jobs:
   build:

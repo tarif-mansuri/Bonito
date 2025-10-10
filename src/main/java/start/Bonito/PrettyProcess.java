@@ -6,12 +6,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,49 +19,35 @@ import start.model.NewsItem;
 
 public class PrettyProcess {
 	
+	Data data = new Data();
+	
 	public void startProcess() {
 		
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-        Runnable task = () -> {
-            // Call your BSE API logic here
-        	
-        	//LocalTime now = LocalTime.now();
-        	LocalTime now = LocalTime.now(ZoneId.of("Asia/Kolkata"));
-
-            // Define first range: 8:00 AM to 3:30 PM
-            LocalTime morningStart = LocalTime.of(8, 0);
-            LocalTime morningEnd = LocalTime.of(15, 30);
-
-            // Define second range: 9:00 PM to 9:02 PM
-            LocalTime nightStart = LocalTime.of(21, 0);
-            LocalTime nightEnd = LocalTime.of(21, 2);
-
-            // Check if current time is in either range
-            if (( !now.isBefore(morningStart) && !now.isAfter(morningEnd) ) ||
-                ( !now.isBefore(nightStart) && !now.isAfter(nightEnd) )) {           	
-                System.out.println("Do the task now! ".concat(now.toString()));
+                System.out.println("Do the task now! Time ".concat(LocalDateTime.now(ZoneId.of("UTC")).toString()));
+                System.out.println("Do the task now! Time ".concat(LocalDateTime.now().toString()));
                 
                 try {
                     // Get today's date in the format YYYYMMDD
                     LocalDate today = LocalDate.now();
+                    LocalDate yesterday = today.minusDays(1);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                    String formattedDate = today.format(formatter);
+                    String toDate = today.format(formatter);
+                    String fromDate = yesterday.format(formatter);
 
                     // Construct the API URL
                     String apiUrl = "https://api.bseindia.com/BseIndiaAPI/api/AnnSubCategoryGetData/w?" +
                             "pageno=1" +
                             "&strCat=Board+Meeting" +
-                            "&strPrevDate=" + formattedDate +
+                            "&strPrevDate=" + fromDate +
                             "&strScrip=" +
                             "&strSearch=P" +
-                            "&strToDate=" + formattedDate +
+                            "&strToDate=" + toDate +
                             "&strType=C" +
                             "&subcategory=Board+Meeting";
 
                     // Send GET request to the API
-                    @SuppressWarnings("deprecation")
-    				HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+    				@SuppressWarnings("deprecation")
+					HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
                     connection.setRequestMethod("GET");
                     
                     connection.setRequestProperty("User-Agent", 
@@ -86,31 +70,27 @@ public class PrettyProcess {
                     JsonNode jsonNode = mapper.readTree(str);
                     //BseApiResponse apiResponse = mapper.readValue(response.toString(), BseApiResponse.class);
                     
+                    //int count = 0;
+                    
                     if (jsonNode.has("Table")) {
                     	
                         for (JsonNode announcement : jsonNode.get("Table")) {
                         	NewsItem item = mapper.readValue(announcement.toString(), NewsItem.class);
+                        	//System.out.println(item.getMore());
+                        	//count++;
                         	if(item.getMore().contains("bonus share") || item.getMore().contains("stock split")) {
-                        		Data.addItem(item);
+                        		data.addItem(item);
                         	}
                             
                         }
+                        //System.out.println(count);
+                        
                     }
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                
-            } else {
-                System.out.println("Outside allowed time ".concat(now.toString()));
-            }
-        	
-        	
-        	
-        };
 
-        // Run every 1 minute
-        scheduler.scheduleAtFixedRate(task, 0, 1, TimeUnit.MINUTES);
     }
 
 }
