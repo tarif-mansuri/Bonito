@@ -23,7 +23,7 @@ public class PrettyProcess {
 	
 	public void startProcess() {
 		
-                System.out.println("Do the task now! Time ".concat(LocalDateTime.now(ZoneId.of("UTC")).toString()));
+                System.out.println("Do the task now! Time ".concat(LocalDateTime.now(ZoneId.of("Asia/Kolkata")).toString()));
                 System.out.println("Do the task now! Time ".concat(LocalDateTime.now().toString()));
                 
                 try {
