@@ -78,7 +78,7 @@ public class PrettyProcess {
                         	NewsItem item = mapper.readValue(announcement.toString(), NewsItem.class);
                         	//System.out.println(item.getMore());
                         	//count++;
-                        	if(item.getMore().contains("bonus share") || item.getMore().contains("stock split")) {
+                        	if(item.getMore().contains("bonus share") || item.getMore().contains("split")) {
                         		data.addItem(item);
                         	}
                             
